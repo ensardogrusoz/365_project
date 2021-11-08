@@ -309,6 +309,5 @@ if __name__ == "__main__":
 
     testMD = testBondCalc.calc_macaulay_duration(testBond, yld)
     print(testMD)
-    
 
 
