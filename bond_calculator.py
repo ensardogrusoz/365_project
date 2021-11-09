@@ -2,7 +2,7 @@
 @project       : Queens College CSCI 365/765 Computational Finance
 @Instructor    : Dr. Alex Pang
 
-@Group Name    : The Goldman Bros
+@Group Name    : Goldman Bros
 @Student Name  : Ensar Dogrusoz
 
 @Date          : Fall 2021
@@ -39,12 +39,11 @@ def get_30360_daycount_frac(start, end):
 
 def get_actualactual_daycount_frac(start, end):
     day_in_year = 365
-    day_count = (end - start).days
-    try:
-        if (day_count > 365): raise
-    except Exception as err:
-        return print('try again, daycount cant be a year apart')
-    return((day_count / day_in_year))
+    diff = end - start
+    if end.year % 4 == 0:
+        day_in_year = 366
+    result = diff.days / day_in_year
+    return(result)
 
 class BondCalculator(object):
     '''
@@ -54,88 +53,52 @@ class BondCalculator(object):
     def __init__(self, pricing_date):
         self.pricing_date = pricing_date
 
-    def compound_freq(self, bond, yld):
-        cf = 0
-        if(bond.payment_freq == PaymentFrequency.ANNUAL):
-            cf = 1
-        elif(bond.payment_freq == PaymentFrequency.SEMIANNUAL):
-            cf = 2
-        elif(bond.payment_freq == PaymentFrequency.QUARTERLY):
-            cf = 4
-        elif(bond.payment_freq == PaymentFrequency.MONTHLY):
-            cf = 12
-        elif(bond.payment_freq == PaymentFrequency.CONTINUOUS):
-            cf = math.exp(-yld,bond.term)
-        #print("Hello Compound Frequency")
-        return(cf)
-
     def calc_one_period_discount_factor(self, bond, yld):
-        # calculate the future cashflow vectors
-        # TODO: calculate the one period discount factor
-        # hint: need to use if else statement for different payment frequency cases
-        # cf = 0
+        if bond.payment_freq.name == "ANNUAL":
+            df = 1/(1 + yld)
+        elif bond.payment_freq.name == "SEMIANNUAL":
+            df = 1/(1 + yld/2)
+        elif bond.payment_freq.name == "QUARTERLY":
+            df = 1/(1 + yld/4)
+        elif bond.payment_freq.name == "MONTHLY":
+            df = 1/(1 + yld/12)
+        else:
+            df = 1
 
-        # if(bond.payment_freq == PaymentFrequency.ANNUAL):
-        #     cf = 1
-        # elif(bond.payment_freq == PaymentFrequency.SEMIANNUAL):
-        #     cf = 2
-        # elif(bond.payment_freq == PaymentFrequency.MONTHLY):
-        #     cf = 12
-        # elif(bond.payment_freq == PaymentFrequency.QUARTERLY):
-        #     cf = 4
-        # elif(bond.payment_freq == PaymentFrequency.CONTINUOUS):
-        #     cf = math.exp(-yld,bond.term)
-
-        # gf = 1 + yld/cf
-
-        # df = 1/gf
-        # # print(df)
-        # return(df)
-
-        #1 Period Discount Factor =  1 / Period Growth Factor
-        #1 Period Growth Factor =  1 + Annualized Rate / Compounding Frequency
-
-        #getting the compounding frequency
-        cf = self.compound_freq(bond, yld)
-        
-        #getting the 1 Period Growth Factor
-        gf = 1 + (yld/cf)
-
-        #getting the 1 Period Discount Factor
-        df = 1/gf
-        df = round(df, 4)
-        return(df)
-
+        return df
 
     def calc_clean_price(self, bond, yld):
         '''
         Calculate bond price as of the pricing_date for a given yield
         bond price should be expressed in percentage eg 100 for a par bond
         '''
-        #result = none;
-        #get 1 Period Discount Factor
+        result = 0
+        cf = bond.coupon * 100
+
+        if bond.payment_freq.name == "ANNUAL":
+            cf 
+        elif bond.payment_freq.name == "SEMIANNUAL":
+            cf = cf / 2
+        elif bond.payment_freq.name == "QUARTERLY":
+            cf = cf / 4
+        elif bond.payment_freq.name == "MONTHLY":
+            cf = cf / 12
+        else:
+            cf
+
+        
         one_period_factor = self.calc_one_period_discount_factor(bond, yld)
+        # TODO: implement calculation here
+        for n in range(bond.term):
+            df = one_period_factor ** (n + 1)
+            if n == (bond.term - 1):
+                result += (cf + 100) * df 
+            else:
+                result += cf * df
 
-        #getting the compounding frequency
-        cf = self.compound_freq(bond, yld)
+        # end TODO:
         
-        #calculating the Cash Flow
-        cashFlow = [bond.principal * (bond.coupon/cf) for i in range(1, cf*bond.term + 1)]
-
-        #calculating the Discount Factors
-        DF = [math.pow(one_period_factor, i) for i in range(1, cf * bond.term + 1)]
-
-        #calculating the Present Values
-        presVals = [cashFlow[i]*DF[i] for i in range(len(DF))]
-
-        #calculating sum of Present Values 
-        totPV = sum(presVals) + (bond.principal * DF[-1])
-
-        #bond price should be expressed in percentage eg 100 for a par bond
-        percentage = round(100 * (totPV/bond.principal), 4)
-        return(percentage)
-        
-
+        return(result)
 
     def calc_accrual_interest(self, bond, settle_date):
         '''
@@ -145,57 +108,69 @@ class BondCalculator(object):
         '''
         prev_pay_date = bond.get_previous_payment_date(settle_date)
         end_date = settle_date
-        
+
         if (bond.day_count == DayCount.DAYCOUNT_30360):
-            frac = get_30360_daycount_frac(prev_pay_date, end_date)
+            frac = get_30360_daycount_frac(prev_pay_date, settle_date)
         elif (bond.day_count == DayCount.DAYCOUNT_ACTUAL_360):
-            frac = get_actual360_daycount_frac(prev_pay_date, end_date)
-        elif (bond.day_count == DayCount.DAYCOUNT_ACTUAL_ACTUAL):
-            frac = get_actualactual_daycount_frac(prev_pay_date, end_date) 
-        
-        result = round(frac * bond.coupon * bond.principal/100, 4)
-        return(result)
+            frac = get_actual360_daycount_frac(prev_pay_date, settle_date)
+
+        result = frac * bond.coupon * bond.principal/100
+
+        # end TODO
+        return(frac)
 
     def calc_macaulay_duration(self, bond, yld):
-        '''
-        time to cashflow weighted by PV
-        '''
-        cf = self.compound_freq(bond, yld)
-        one_period_factor = self.calc_one_period_discount_factor(bond, yld)
-        #calculating the Cash Flow
-        cashFlow = [bond.principal * (bond.coupon/cf) for i in range(1, cf*bond.term + 1)]
+        result = 0
+        cf = bond.coupon * 100
 
-        #calculating the Discount Factors
-        DF = [math.pow(one_period_factor, i) for i in range(1, cf * bond.term + 1)]
+        if bond.payment_freq.name == "ANNUAL":
+            cf 
+        elif bond.payment_freq.name == "SEMIANNUAL":
+            cf = cf / 2
+        elif bond.payment_freq.name == "QUARTERLY":
+            cf = cf / 4
+        elif bond.payment_freq.name == "MONTHLY":
+            cf = cf / 12
+        else:
+            cf
 
-        #calculating the Present Values
-        presVals = [cashFlow[i]*DF[i] for i in range(len(DF))]
-
-        #calculating sum of Present Values 
-        totPV = sum(presVals) + (bond.principal * DF[-1])
-        #calculating sum of weights
-        weight = [presVals[i]/totPV for i in range(len(DF))]
-        time = [i * (1/cf) for i in range(1,cf*bond.term+1)]
-        #calculating time * weight
-        timeWeight = [weight[i]*time[i] for i in range(len(DF))]
-        # summing of everything
-        sumTimeWeight = 0
-        for i in range(len(timeWeight)):
-            sumTimeWeight += timeWeight[i]
-
-        #result =( sum(wavg) / sum(PVs))
-        result = round(sumTimeWeight/totPV,4)
         
+        one_period_factor = self.calc_one_period_discount_factor(bond, yld)
+        sum_pv = 0
+        for n in range(bond.term):
+            df = one_period_factor ** (n + 1)
+            if n == (bond.term - 1):
+                pv = (cf + 100) * df 
+
+            else:
+                pv = cf * df
+                    
+            sum_pv += pv
+            result += pv * (n + 1)
+      
+        result = result / sum_pv
         return(result)
 
     def calc_modified_duration(self, bond, yld):
         '''
         calculate modified duration at a certain yield yld
         '''
+
+        if bond.payment_freq.name == "ANNUAL":
+            n = 1
+        elif bond.payment_freq.name == "SEMIANNUAL":
+            n = 2
+        elif bond.payment_freq.name == "QUARTERLY":
+            n = 4
+        elif bond.payment_freq.name == "MONTHLY":
+            n = 12
+        else:
+            n = 0
+
         D = self.calc_macaulay_duration(bond, yld)
 
-        # TODO: implement details here
-        # end TODO:
+        result = D / (1 + (yld / n))
+
         return(result)
 
     def calc_yield(self, bond, bond_price):
@@ -214,11 +189,32 @@ class BondCalculator(object):
         return(yld)
 
     def calc_convexity(self, bond, yld):
-        # calculate convexity of a bond at a certain yield yld
+        sum_parts = 0
+        cf = bond.coupon * 100
 
-        # TODO: implement details here
-        # result = sum(wavg) / sum(PVs))
-        return( result)
+        if bond.payment_freq.name == "ANNUAL":
+            cf 
+        elif bond.payment_freq.name == "SEMIANNUAL":
+            cf = cf / 2
+        elif bond.payment_freq.name == "QUARTERLY":
+            cf = cf / 4
+        elif bond.payment_freq.name == "MONTHLY":
+            cf = cf / 12
+        else:
+            cf
+
+        
+        one_period_factor = self.calc_one_period_discount_factor(bond, yld)
+        for n in range(bond.term):
+
+            if n == (bond.term - 1):
+                cf = cf + 100
+     
+            sum_parts += (cf/(1 + yld) ** (n + 1)) * ((n + 1) ** 2 + (n + 1))
+      
+        clean_price = self.calc_clean_price(bond, yld)
+        result = 1 / (clean_price * (1 + yld) ** 2) * sum_parts
+        return(result)
 
 
 ##########################  some test cases ###################
@@ -280,34 +276,33 @@ def _test():
 
     
 
-if __name__ == "__main__":
-    # _test()
+# if __name__ == "__main__":
+#    _test()
+
+def _example5():
     issue_date = date(2020, 1, 1)
     pricing_date = date(2020, 1, 1)
     settle_date = date(2021, 5, 10)
+    engine = BondCalculator(pricing_date)
     yld = .06
-    testBond = Bond(issue_date, 
-                term = 2,   
+    # Example 5
+    bond = Bond(issue_date, 
+                term=5, 
                 day_count = DayCount.DAYCOUNT_30360,
-                payment_freq = PaymentFrequency.SEMIANNUAL, 
+                payment_freq = PaymentFrequency.ANNUAL, 
                 coupon = 0.08, 
-                principal = 100)
-    testBondCalc = BondCalculator(pricing_date)
+                principal=100)
 
-    #TESTING 1 PERIOD DISCOUNT FACTOR
-    testOPDF = testBondCalc.calc_one_period_discount_factor(testBond, yld)
-    print(testOPDF) #should be 0.9709
+    
+    px_bond2 = engine.calc_clean_price(bond, yld)
+    print("The clean price of bond 2 is: ", format(px_bond2, '.4f'))
+    # assert( abs(px_bond2 - 92.640) < 0.01)
 
-    #TESTING CLEAN PRICE
-    #clean price of the bond is the present value of the FV
+    print("calc_one_period_discount_factor" , engine.calc_one_period_discount_factor(bond, yld))
+    print("calc_clean_price" , engine.calc_clean_price(bond, yld))
+    print("calc_accrual_interest" , engine.calc_accrual_interest(bond, settle_date))
+    print("calc_macaulay_duration" , engine.calc_macaulay_duration(bond, yld))
+    print("calc_modified_duration" , engine.calc_modified_duration(bond, yld))
+    print("calc_convexity" , engine.calc_convexity(bond, yld))
 
-    testCP = testBondCalc.calc_clean_price(testBond, yld)
-    print(testCP)
-
-    testAI = testBondCalc.calc_accrual_interest(testBond, settle_date)
-    print(testAI)
-
-    testMD = testBondCalc.calc_macaulay_duration(testBond, yld)
-    print(testMD)
-
-
+_example5()
