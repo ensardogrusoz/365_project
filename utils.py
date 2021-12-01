@@ -9,7 +9,7 @@ https://github.com/JECSand/yahoofinancials
 
 '''
 
-from yahoofinancials import YahooFinancials 
+from yahoofinancials import YahooFinancials
 
 class MyYahooFinancials(YahooFinancials):
     '''

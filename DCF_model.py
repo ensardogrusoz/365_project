@@ -44,7 +44,7 @@ class DiscountedCashFlowModel(object):
         self.long_term_growth_rate = None
 
 
-    def set_FCC_growth_rate(self, short_term_rate, medium_term_rate, long_term_rate):
+    def set_FCF_growth_rate(self, short_term_rate, medium_term_rate, long_term_rate):
         self.short_term_growth_rate = short_term_rate
         self.medium_term_growth_rate = medium_term_rate
         self.long_term_growth_rate = long_term_rate
@@ -68,13 +68,13 @@ class DiscountedCashFlowModel(object):
 
 def _test():
     symbol = 'AAPL'
-    as_of_date = datetime.date(2021, 11, 1)
+    as_of_date = datetime.date(2021, 12, 1)
 
     stock = Stock(symbol)
     model = DiscountedCashFlowModel(stock, as_of_date)
 
     print("Shares ", stock.get_num_shares_outstanding())
-    print("FCC ", stock.get_free_cashflow())
+    print("FCF ", stock.get_free_cashflow())
     beta = stock.get_beta()
     wacc = stock.lookup_wacc_by_beta(beta)
     print("Beta ", beta)
@@ -84,7 +84,7 @@ def _test():
 
     # look up EPS next 5Y from Finviz
     eps5y = 0.1543
-    model.set_FCC_growth_rate(eps5y, eps5y/2, 0.04)
+    model.set_FCF_growth_rate(eps5y, eps5y/2, 0.04)
 
     model_price = model.calc_fair_value()
     print(f"DCF price for {symbol} as of {as_of_date} is {model_price}")

@@ -183,10 +183,10 @@ class BondCalculator(object):
             px = calculator.calc_clean_price(bond, yld)
             return(px - bond_price)
 
-        # TODO: implement details here
-        #yld, n_iteractions = bisection( ....)
-        # end TODO:
+        yld, n_iteractions = bisection(match_price, 0, 1000, eps=1.0e-6)
+
         return(yld)
+
 
     def calc_convexity(self, bond, yld):
         sum_parts = 0
@@ -276,8 +276,8 @@ def _test():
 
     
 
-# if __name__ == "__main__":
-#    _test()
+if __name__ == "__main__":
+   _test()
 
 def _example5():
     issue_date = date(2020, 1, 1)
@@ -285,13 +285,14 @@ def _example5():
     settle_date = date(2021, 5, 10)
     engine = BondCalculator(pricing_date)
     yld = .06
+    price = 103.72
     # Example 5
-    bond = Bond(issue_date, 
-                term=5, 
+    bond = Bond(issue_date,
+                term=5,
                 day_count = DayCount.DAYCOUNT_30360,
-                payment_freq = PaymentFrequency.ANNUAL, 
-                coupon = 0.08, 
-                principal=100)
+                payment_freq = PaymentFrequency.SEMIANNUAL,
+                coupon = 0.05, 
+                principal = 100)
 
     
     px_bond2 = engine.calc_clean_price(bond, yld)
@@ -303,6 +304,7 @@ def _example5():
     print("calc_accrual_interest" , engine.calc_accrual_interest(bond, settle_date))
     print("calc_macaulay_duration" , engine.calc_macaulay_duration(bond, yld))
     print("calc_modified_duration" , engine.calc_modified_duration(bond, yld))
+    print("calc_yield" , engine.calc_yield(bond, price))
     print("calc_convexity" , engine.calc_convexity(bond, yld))
 
-_example5()
+# _example5()

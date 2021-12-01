@@ -39,9 +39,10 @@ class Stock(object):
         Get daily historical OHLCV pricing dataframe
         '''
         # TODO
-        # data = self.yfinancial.get_historical...
+        data = self.yfinancial.get_historical_price_data(start_date, end_date, 'daily')
         # create a OHLCV data frame
-        # self.ohlcv_df =
+        self.ohlcv_df = pd.DataFrame(data[self.symbol]['prices'])
+        # print(self.ohlcv_df)
         #end TODO
         
     def calc_returns(self):
@@ -51,6 +52,9 @@ class Stock(object):
         self.ohlcv_df['returns'] = (self.ohlcv_df['close'] - self.ohlcv_df['prev_close'])/ \
                                         self.ohlcv_df['prev_close']
 
+        # print(self.ohlcv_df['prev_close'])
+        # print(self.ohlcv_df['returns'])
+
 
     # financial statements related methods
     
@@ -59,17 +63,20 @@ class Stock(object):
         return Total debt of the company
         '''
         result = None
-        # TODO
-        # end TODO
+        long = self.yfinancial.get_long_term_debt()
+        shortLong = self.yfinancial._financial_statement_data('balance', 'balanceSheetHistory', 'shortLongTermDebt', "annual")
+
+        result = (long + shortLong) - (self.get_cash_and_cash_equivalent())
+
         return(result)
 
     def get_free_cashflow(self):
         '''
         return Free Cashflow of the company
         '''
-        result = None
-        # TODO
-        # end TODO
+        cashFlow = self.yfinancial.get_operating_cashflow()
+        expenditures = self.yfinancial._financial_statement_data('cash', 'cashflowStatementHistory', 'capitalExpenditures', 'annual')
+        result = cashFlow + expenditures
         return(result)
 
     def get_cash_and_cash_equivalent(self):
@@ -77,36 +84,49 @@ class Stock(object):
         Return cash and cash equivalent of the company
         '''
         result = None
-        # TODO
-        # end TODO
+        cash = self.yfinancial.get_cash()
+        assets = self.yfinancial._financial_statement_data('balance', 'balanceSheetHistory', 'totalCurrentAssets', 'annual')
+        
+        result = cash + assets
+
         return(result)
 
     def get_num_shares_outstanding(self):
         '''
         get current number of shares outstanding from Yahoo financial library
         '''
-        result = None
-        # TODO
-        # end TODO
+        result = self.yfinancial.get_num_shares_outstanding('current')
         return(result)
 
     def get_beta(self):
         '''
         get beta from Yahoo financial
         '''
-        result = None
-        # TODO
-        #result = self.yfinancial.get_beta()
-        # end TODO
+        result = self.yfinancial.get_beta()
+
         return(result)
 
     def lookup_wacc_by_beta(self, beta):
         '''
         lookup wacc by using the table in the DiscountedCashFlowModel lecture powerpoint
         '''
-        result = None
-        # TODO:
-        #end TODO
+        if beta < 0.8:
+            result = 5
+        elif 0.8 <= beta < 1.0:
+            result = 6
+        elif 1.0 <= beta < 1.1:
+            result = 6.5
+        elif 1.1 <= beta < 1.2:
+            result = 7
+        elif 1.2 <= beta < 1.3:
+            result = 7.5
+        elif 1.3 <= beta < 1.4:
+            result = 8
+        elif 1.5 <= beta < 1.6:
+            result = 8.5
+        elif beta > 1.6:
+            result = 9
+        
         return(result)
         
 
@@ -119,8 +139,17 @@ def _test():
     print(f"Free Cash Flow for {symbol} is {stock.get_free_cashflow()}")
 
     # 
-    start_date = datetime.date(2020, 1, 1)
-    end_date = datetime.date(2021, 11, 1)
+    
+
+    start_date = '2020-1-1'
+    end_date = '2021-11-1'
+    # print(stock.get_daily_hist_price(start_date, end_date))
+    # print(stock.calc_returns())
+    # print(stock.get_total_debt())
+    # print(stock.get_free_cashflow())
+    # print(stock.get_beta())
+    # print(stock.get_num_shares_outstanding())
+
     stock.get_daily_hist_price(start_date, end_date)
     print(type(stock.ohlcv_df))
     print(stock.ohlcv_df.head())
@@ -129,3 +158,4 @@ def _test():
 
 if __name__ == "__main__":
     _test()
+    
