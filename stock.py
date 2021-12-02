@@ -62,12 +62,12 @@ class Stock(object):
         '''
         return Total debt of the company
         '''
-        result = None
         long = self.yfinancial.get_long_term_debt()
-        shortLong = self.yfinancial._financial_statement_data('balance', 'balanceSheetHistory', 'shortLongTermDebt', "annual")
+        totalCurLiab = self.yfinancial._financial_statement_data('balance', 'balanceSheetHistory', 'totalCurrentLiabilities', "annual")
+        accountPayable = self.yfinancial._financial_statement_data('balance', 'balanceSheetHistory', 'accountsPayable', "annual")
+        otherCurLiab = self.yfinancial._financial_statement_data('balance', 'balanceSheetHistory', 'otherCurrentLiab', "annual")
 
-        result = (long + shortLong) - (self.get_cash_and_cash_equivalent())
-
+        result = long + totalCurLiab - accountPayable - otherCurLiab
         return(result)
 
     def get_free_cashflow(self):
@@ -136,7 +136,7 @@ def _test():
     # a few basic unit tests
     symbol = 'AAPL'
     stock = Stock(symbol)
-    print(f"Free Cash Flow for {symbol} is {stock.get_free_cashflow()}")
+    # print(f"Free Cash Flow for {symbol} is {stock.get_free_cashflow()}")
 
     # 
     
@@ -150,9 +150,9 @@ def _test():
     # print(stock.get_beta())
     # print(stock.get_num_shares_outstanding())
 
-    stock.get_daily_hist_price(start_date, end_date)
-    print(type(stock.ohlcv_df))
-    print(stock.ohlcv_df.head())
+    # stock.get_daily_hist_price(start_date, end_date)
+    # print(type(stock.ohlcv_df))
+    # print(stock.ohlcv_df.head())
 
 
 
