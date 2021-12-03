@@ -132,7 +132,7 @@ class Stock(object):
             WACC = 8
         elif 1.5 <= beta < 1.6:
             WACC = 8.5
-        elif beta > 1.6:
+        elif beta >= 1.6:
             WACC = 9
         
         return(WACC)
