@@ -23,6 +23,9 @@ class MyYahooFinancials(YahooFinancials):
     def get_operating_cashflow(self):
         return self._financial_statement_data('cash', 'cashflowStatementHistory', 'totalCashFromOperatingActivities', self.freq)
 
+    def get_assets(self):
+        return self._financial_statement_data('balance', 'balanceSheetHistory', 'totalCurrentAssets', 'annual')
+
     def get_capital_expenditures(self):
         return self._financial_statement_data('cash', 'cashflowStatementHistory', 'capitalExpenditures', self.freq)
 
