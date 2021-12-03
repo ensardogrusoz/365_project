@@ -92,7 +92,7 @@ class Stock(object):
         Return cash and cash equivalent of the company
         '''
         cash = self.yfinancial.get_cash()
-        assets = self.yfinancial.get_assets
+        assets = self.yfinancial.get_assets()
 
         result = cash + assets
         return(result)

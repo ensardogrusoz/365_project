@@ -60,34 +60,56 @@ class DiscountedCashFlowModel(object):
         4. Compute the PV as cash + short term investments - total debt + the above sum of discounted free cash flow
         5. Return the stock fair value of the stock
         '''
-        
-        #TODO
-        #end TODO
-        return(result)
+        yearlyDF = 1 / (1 + self.stock.lookup_wacc_by_beta(self.stock.get_beta()))
+        FCC = self.stock.get_free_cashflow()
+        DCF = 0
+
+        # i represents the years
+        # EPS5y = short term rate
+        for i in range(1, 6): 
+            DCF += FCC * math.pow((1 + self.short_term_growth_rate), i) * math.pow(yearlyDF, i)
+        # EPS6 to 10 = medium term rate
+        CF5 = FCC * math.pow((1 + self.short_term_growth_rate), 5)
+        for i in range(1, 6): 
+            DCF += CF5 * math.pow((1 + self.medium_term_growth_rate), i) * math.pow(yearlyDF, i + 5)
+        # EPS 10 to 20 = long term rate
+        CF10 = CF5 * math.pow((1 + self.medium_term_growth_rate), 5)
+        for i in range(1, 11): 
+            DCF += CF10 * math.pow((1 + self.long_term_growth_rate), i) * math.pow(yearlyDF, i + 10)
+
+        PV = self.stock.get_cash_and_cash_equivalent() - self.stock.get_total_debt() + DCF
+
+        stockFairValue = PV / self.stock.get_num_shares_outstanding()
+
+        return(stockFairValue)
 
 
 def _test():
     symbol = 'AAPL'
-    as_of_date = datetime.date(2021, 12, 1)
+    as_of_date = datetime.date(2021, 11, 1)
+    # as_of_date = datetime.date(2021, 4, 19)
 
     stock = Stock(symbol)
-    model = DiscountedCashFlowModel(stock, as_of_date)
-
-    print("Shares ", stock.get_num_shares_outstanding())
-    print("FCC ", stock.get_free_cashflow())
+    print("*******SUMMARY*******")
+    print("Shares: ", stock.get_num_shares_outstanding())
+    print("FCC: ", stock.get_free_cashflow())
     beta = stock.get_beta()
     wacc = stock.lookup_wacc_by_beta(beta)
-    print("Beta ", beta)
-    print("WACC ", wacc)
-    print("Total debt ", stock.get_total_debt())
-    print("cash ", stock.get_cash_and_cash_equivalent())
+    print("Beta: ", beta)
+    print("WACC: ", wacc)
+    print("Total debt: ", stock.get_total_debt())
+    print("Cash and Cash Equivalent: ", stock.get_cash_and_cash_equivalent())
 
-    # look up EPS next 5Y from Finviz
-    eps5y = 0.1543
-    model.set_FCC_growth_rate(eps5y, eps5y/2, 0.04)
+    #EPS next 5Y from Finviz is 15.43%
+    eps5y = 0.1543; #short term rate
+    mediumTermRate = eps5y / 2; #medium term rate
+    longTermRate = 0.04
 
-    model_price = model.calc_fair_value()
-    print(f"DCF price for {symbol} as of {as_of_date} is {model_price}")
+    dcfModel = DiscountedCashFlowModel(stock, as_of_date)
+    dcfModel.set_FCC_growth_rate(eps5y, mediumTermRate, longTermRate)
+
+    dcfModelPrice = dcfModel.calc_fair_value()
+    print(f"DCF price for {symbol} as of {as_of_date} is {dcfModelPrice}")
     
 
 if __name__ == "__main__":
