@@ -146,18 +146,18 @@ def _test():
     # 
     
 
-    start_date = '2020-1-1'
-    end_date = '2021-11-1'
-    # print(stock.get_daily_hist_price(start_date, end_date))
+    start_date = datetime.date(2020, 1, 1).strftime("%Y-%m-%d")
+    end_date = datetime.date(2020, 11, 1).strftime("%Y-%m-%d")
+    print(stock.get_daily_hist_price(start_date, end_date))
     # print(stock.calc_returns())
     # print(stock.get_total_debt())
     # print(stock.get_free_cashflow())
     # print(stock.get_beta())
     # print(stock.get_num_shares_outstanding())
 
-    # stock.get_daily_hist_price(start_date, end_date)
-    # print(type(stock.ohlcv_df))
-    # print(stock.ohlcv_df.head())
+    stock.get_daily_hist_price(start_date, end_date)
+    print(type(stock.ohlcv_df))
+    print(stock.ohlcv_df.head())
 
 
 
