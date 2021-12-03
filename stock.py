@@ -148,7 +148,7 @@ def _test():
 
     start_date = datetime.date(2020, 1, 1).strftime("%Y-%m-%d")
     end_date = datetime.date(2020, 11, 1).strftime("%Y-%m-%d")
-    print(stock.get_daily_hist_price(start_date, end_date))
+    # print(stock.get_daily_hist_price(start_date, end_date))
     # print(stock.calc_returns())
     # print(stock.get_total_debt())
     # print(stock.get_free_cashflow())
