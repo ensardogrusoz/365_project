@@ -38,7 +38,7 @@ class SimpleMovingAverages(object):
         which can be  open, high, low or close
         '''
         
-        size = self.ohlcv_df[price_source].size
+        size = self.ohlcv_df[price_source].size 
         total = 0
         for i in range(0, period):
             total += self.ohlcv_df[price_source][size - i - 1]
@@ -160,18 +160,17 @@ def _test():
 
     stock.get_daily_hist_price("2020-01-01", "2021-11-01")
 
-    periods = [10, 20, 50, 100, 200]
+    periods = [9, 20, 50, 100, 200]
     smas = SimpleMovingAverages(stock.ohlcv_df, periods)
     smas.run()
     emas = ExponentialMovingAverages(stock.ohlcv_df, periods)
     emas.run()
-    # print(emas._ema)
-    s1 = smas.get_series(10)
+    s1 = smas.get_series(9)
 
     rsi_indicator = RSI(stock.ohlcv_df)
     rsi_indicator.run()
 
-    # print(f"RSI for {symbol} is {rsi_indicator.rsi}")
+    #print(f"RSI for {symbol} is {rsi_indicator.rsi}")
 
     vwap = VWAP(stock.ohlcv_df)
     vwap.run()

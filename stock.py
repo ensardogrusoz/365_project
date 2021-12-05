@@ -63,9 +63,7 @@ class Stock(object):
     def get_total_debt(self):
         '''
         return Total debt of the company
-
         Total Debt = Long Term Debt + Current(short term) Debt
-
         Current Debt = Total Current Liabilities - Account Payables - Other Current Liabilities - Current Deferred Liabilities
         '''
         longTermDebt = self.yfinancial.get_long_term_debt()
@@ -120,7 +118,7 @@ class Stock(object):
         '''
         if beta < 0.8:
             WACC = .05
-        elif 0.8 <= beta < 1.0:
+        elif 0.8 <= beta <= 1.0:
             WACC = .06
         elif 1.0 <= beta < 1.1:
             WACC = .065
@@ -132,7 +130,7 @@ class Stock(object):
             WACC = .08
         elif 1.5 <= beta < 1.6:
             WACC = .085
-        elif beta >= 1.6:
+        elif beta > 1.6:
             WACC = .09
         
         return(WACC)
