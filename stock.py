@@ -47,7 +47,7 @@ class Stock(object):
         #Creating an OHLCV data frame
         self.ohlcv_df = pd.DataFrame(data[self.symbol]['prices'])
 
-        #Pushing the formatted_date column forward and set it as our index
+        #Pushing the formatted_date column forward and setting it as our index
         self.ohlcv_df = self.ohlcv_df.set_index('formatted_date')
 
     #calc_return is something that we don't need but provided to us     
@@ -79,8 +79,8 @@ class Stock(object):
     def get_free_cashflow(self):
         '''
         return Free Cashflow of the company
-        #Free Cash Flow = Operating Cash Flow + Capital Expenditure
-        #Capital Expenditure is stated as a negative number
+        Free Cash Flow = Operating Cash Flow + Capital Expenditure
+        Capital Expenditure is stated as a negative number
         '''
         operatingCashFlow = self.yfinancial.get_operating_cashflow()
         capitalExpenditure = self.yfinancial.get_capital_expenditures()
@@ -91,18 +91,18 @@ class Stock(object):
         '''
         Return cash and cash equivalent of the company
         '''
-        cash = self.yfinancial.get_cash()
-        assets = self.yfinancial.get_assets()
+        total = 0
+        total += self.yfinancial.get_cash()
+        total += self.yfinancial.get_short_term_investments()
 
-        result = cash + assets
-        return(result)
+        return(total)
 
     def get_num_shares_outstanding(self):
         '''
         get current number of shares outstanding from Yahoo financial library
         '''
         numSharesOutstanding = self.yfinancial.get_num_shares_outstanding()
-        return(numSharesOutstanding); 
+        return(numSharesOutstanding)
 
     def get_beta(self):
         '''
@@ -110,7 +110,7 @@ class Stock(object):
         simple because the library already has get_beta
         '''
         beta = self.yfinancial.get_beta()
-        return beta
+        return (beta)
 
     def lookup_wacc_by_beta(self, beta):
         '''
@@ -119,48 +119,46 @@ class Stock(object):
         The WACC here is in percentage 
         '''
         if beta < 0.8:
-            WACC = 5
-        elif 0.8 <= beta <= 1.0:
-            WACC = 6
+            WACC = .05
+        elif 0.8 <= beta < 1.0:
+            WACC = .06
         elif 1.0 <= beta < 1.1:
-            WACC = 6.5
+            WACC = .065
         elif 1.1 <= beta < 1.2:
-            WACC = 7
+            WACC = .07
         elif 1.2 <= beta < 1.3:
-            WACC = 7.5
+            WACC = .075
         elif 1.3 <= beta < 1.5:
-            WACC = 8
+            WACC = .08
         elif 1.5 <= beta < 1.6:
-            WACC = 8.5
+            WACC = .085
         elif beta >= 1.6:
-            WACC = 9
+            WACC = .09
         
         return(WACC)
 
+        
 def _test():
     # a few basic unit tests
     symbol = 'AAPL'
     stock = Stock(symbol)
-    # print(f"Free Cash Flow for {symbol} is {stock.get_free_cashflow()}")
-
-    # 
-    
+    print(f"*******STOCK TEST FOR {symbol}*******")
+    print(f"Total Debt for {symbol} is {stock.get_total_debt()}")
+    print(f"Free Cash Flow for {symbol} is {stock.get_free_cashflow()}")
+    print(f"Cash and Cash Equivalent for {symbol} is {stock.get_cash_and_cash_equivalent()}")
+    print(f"Number of Shares Outstanding for {symbol} is {stock.get_num_shares_outstanding()}")
+    print(f"Beta for {symbol} is {stock.get_beta()}")
+    print(f"WACC for {symbol} is {stock.lookup_wacc_by_beta(stock.get_beta())}")
 
     start_date = datetime.date(2020, 1, 1).strftime("%Y-%m-%d")
     end_date = datetime.date(2020, 11, 1).strftime("%Y-%m-%d")
-    # print(stock.get_daily_hist_price(start_date, end_date))
-    # print(stock.calc_returns())
-    # print(stock.get_total_debt())
-    # print(stock.get_free_cashflow())
-    # print(stock.get_beta())
-    # print(stock.get_num_shares_outstanding())
-
+    
+    #function to download daily historical closing price for yahoo
     stock.get_daily_hist_price(start_date, end_date)
     print(type(stock.ohlcv_df))
     print(stock.ohlcv_df.head())
-
+    print(f"********************************")
 
 
 if __name__ == "__main__":
     _test()
-    

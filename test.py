@@ -1,8 +1,7 @@
 import yfinance as yf
 
-msft = yf.Ticker("AAPL")
-
-# get stock info
-print(msft.quarterly_cashflow)
-
-msft.cashflow
+try:
+    sector = yf.Ticker('AAPL').info['sector']
+except:
+    sector = 'NA'
+print(sector)

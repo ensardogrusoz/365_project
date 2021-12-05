@@ -60,12 +60,13 @@ class DiscountedCashFlowModel(object):
         4. Compute the PV as cash + short term investments - total debt + the above sum of discounted free cash flow
         5. Return the stock fair value of the stock
         '''
+        
         yearlyDF = 1 / (1 + self.stock.lookup_wacc_by_beta(self.stock.get_beta()))
         FCC = self.stock.get_free_cashflow()
         DCF = 0
 
-        # i represents the years
-        # EPS5y = short term rate
+        # i represents the years and we are getting the summation throughout those years
+        # EPS5y = short term rate 
         for i in range(1, 6): 
             DCF += FCC * math.pow((1 + self.short_term_growth_rate), i) * math.pow(yearlyDF, i)
         # EPS6 to 10 = medium term rate
@@ -90,26 +91,31 @@ def _test():
     # as_of_date = datetime.date(2021, 4, 19)
 
     stock = Stock(symbol)
-    print("*******SUMMARY*******")
-    print("Shares: ", stock.get_num_shares_outstanding())
+    print(f"*********************SUMMARY FOR {symbol}*********************")
+    print("Total debt: ", stock.get_total_debt())
     print("FCC: ", stock.get_free_cashflow())
+    print("Cash and Cash Equivalent: ", stock.get_cash_and_cash_equivalent())
+    print("Number of Shares: ", stock.get_num_shares_outstanding())
     beta = stock.get_beta()
     wacc = stock.lookup_wacc_by_beta(beta)
     print("Beta: ", beta)
     print("WACC: ", wacc)
-    print("Total debt: ", stock.get_total_debt())
-    print("Cash and Cash Equivalent: ", stock.get_cash_and_cash_equivalent())
-
+    
     #EPS next 5Y from Finviz is 15.43%
-    eps5y = 0.1543; #short term rate
-    mediumTermRate = eps5y / 2; #medium term rate
+    eps5y = 0.1543 #short term rate
+    mediumTermRate = eps5y / 2 
     longTermRate = 0.04
+    print(f"Short Term Rate: {eps5y}")
+    print(f"Medium Term Rate: {mediumTermRate}")
+    print(f"Long Term Rate: {longTermRate}")
 
     dcfModel = DiscountedCashFlowModel(stock, as_of_date)
+    
     dcfModel.set_FCC_growth_rate(eps5y, mediumTermRate, longTermRate)
 
     dcfModelPrice = dcfModel.calc_fair_value()
     print(f"DCF price for {symbol} as of {as_of_date} is {dcfModelPrice}")
+    print(f"***************************************************************")
     
 
 if __name__ == "__main__":

@@ -37,9 +37,14 @@ class SimpleMovingAverages(object):
         for a given period, calc the SMA as a pandas series from the price_source
         which can be  open, high, low or close
         '''
-        result = None
-        #TODO
-        #end TODO
+        
+        size = self.ohlcv_df[price_source].size
+        total = 0
+        for i in range(0, period):
+            total += self.ohlcv_df[price_source][size - i - 1]
+
+        result = total / period
+
         return(result)
         
     def run(self, price_source = 'close'):
@@ -67,17 +72,32 @@ class ExponentialMovingAverages(object):
         '''
         for a given period, calc the SMA as a pandas series
         '''
-        result = None
-        #TODO: implement details here
-        #end TODO
+        
+        size = self.ohlcv_df['close'].size
+        total = 0
+        for i in range(0, period):
+            total += self.ohlcv_df['close'][size - i - 1 - period]
+
+        first_day = total / period
+        smoothing_factor = 2
+
+
+        for i in range(0, period):
+            first_day *= (1 - smoothing_factor/(1 + period))
+            first_day += self.ohlcv_df['close'][size - 1 - period + i] * smoothing_factor/(1 + period)
+
+
+        result = first_day
+
         return(result)
         
     def run(self):
         '''
-        Calculate all the simple moving averages as a dict
+        Calculate all the exponential moving averages as a dict
         '''
         for period in self.periods:
             self._ema[period] = self._calc(period)
+
 
     def get_series(self, period):
         return(self._ema[period])
@@ -94,12 +114,19 @@ class RSI(object):
         return(self.rsi)
 
     def run(self):
-        '''
-        calculate RSI
-        '''
-        #TODO: implement details here
-        # self.rsi = ...
-        #end TODO
+        size = self.ohlcv_df['close'].size
+        up = 0
+        down = 0
+        for i in range(0, self.period):
+            if (self.ohlcv_df['close'][size - i - 1] > self.ohlcv_df['close'][size - i - 2]): 
+                up += 1
+            if (self.ohlcv_df['close'][size - i - 1] < self.ohlcv_df['close'][size - i - 2]): 
+                down += 1
+
+        result = 100 - 100/(1 + (up/self.period)/(down/self.period) )
+
+        self.rsi = result
+        return(result)
 
 class VWAP(object):
 
@@ -111,11 +138,16 @@ class VWAP(object):
         return(self.vwap)
 
     def run(self):
-        '''
-        calculate VWAP
-        '''
-        #TODO: implement details here
-        #end TODO
+        size = self.ohlcv_df['volume'].size
+        total_volume = 0
+        total_price = 0
+        for i in range(0, size):
+            total_volume += self.ohlcv_df['volume'][size - i - 1]
+            total_price += self.ohlcv_df['close'][size - i - 1]
+
+        result = total_price * self.ohlcv_df['volume'][size - 1] / total_volume
+
+        return(result)
 
 
 
@@ -126,21 +158,24 @@ def _test():
     start_date = datetime.date(2020, 1, 1)
     end_date = datetime.date.today()
 
-    stock.get_daily_hist_price(start_date, end_date)
+    stock.get_daily_hist_price("2020-01-01", "2021-11-01")
 
-    periods = [9, 20, 50, 100, 200]
+    periods = [10, 20, 50, 100, 200]
     smas = SimpleMovingAverages(stock.ohlcv_df, periods)
     smas.run()
-    s1 = smas.get_series(9)
-    print(s1.index)
-    print(s1)
+    emas = ExponentialMovingAverages(stock.ohlcv_df, periods)
+    emas.run()
+    # print(emas._ema)
+    s1 = smas.get_series(10)
 
     rsi_indicator = RSI(stock.ohlcv_df)
     rsi_indicator.run()
 
-    print(f"RSI for {symbol} is {rsi_indicator.rsi}")
+    # print(f"RSI for {symbol} is {rsi_indicator.rsi}")
+
+    vwap = VWAP(stock.ohlcv_df)
+    vwap.run()
     
 
 if __name__ == "__main__":
     _test()
-

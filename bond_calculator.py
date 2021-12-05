@@ -266,7 +266,8 @@ def _example4():
 
     print("The yield of bond 4 is: ", yld)
 
-    assert( abs(yld - 0.04168) < 0.01)
+    assert( abs(yld - 
+    0.04168) < 0.01)
     
 def _test():
     # basic test cases
